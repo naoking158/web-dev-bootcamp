@@ -1,27 +1,57 @@
 <template>
-  <div h-screen>
-    <Connection :code=""readyState ?? 0" />
-  </div>
+  <h1>Hello</h1>
+  <v-btn @click="showData">
+    show data
+  </v-btn>
+  <v-btn @click="create">
+    create dummy data
+  </v-btn>
+  <v-btn @click="deleteUser">
+    delete dummy data
+  </v-btn>
 </template>
 
 <script setup lang="ts">
-import { useIntervalFn } from '@vueuse/core'
-
-const { data, refresh } = await useFetch('/api/status')
-const readState = ref(data.value ?? 0)
-
-const { pause, resume } = useIntervalFn(async () => {
+const { data, refresh } = useFetch('/api/users', { immediate: false })
+const showData = () => {
   refresh()
-  readState.value = data.value ?? 0
-  console.log('re-checking...')
-}, 5000)
+  console.log(data.value)
+}
 
-watch(
-  readState,
-  () => {
-    if (readState.value === 1) pause()
-    else resume()
-  },
-  { immediate: true },
-)
+const create = async () => {
+  const { data, error } = await useFetch('/api/users/create', {
+    method: 'POST',
+    body: {
+      name: 'John Doe',
+      slug: '1',
+    },
+  })
+
+  if (error.value) {
+    console.log('failed')
+    console.log(error.value)
+    return error.value
+  }
+
+  console.log('maybe success')
+  console.log(data.value)
+}
+
+const deleteUser = async () => {
+  const { data, error } = await useFetch(
+    '/api/users/66f806498e12be73b1867c0c',
+    {
+      method: 'DELETE',
+    },
+  )
+
+  if (error.value) {
+    console.log('failed to delete')
+    console.log(error.value)
+    return
+  }
+
+  console.log('delete success')
+  console.log(data.value)
+}
 </script>
